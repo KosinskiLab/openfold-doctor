@@ -179,8 +179,9 @@ def main(args):
     if args.config_preset.startswith("seq"):
         args.use_single_seq_mode = True
 
+
     config = model_config(
-        args.config_preset, 
+        args.config_preset,
         long_sequence_inference=args.long_sequence_inference,
         use_deepspeed_evoformer_attention=args.use_deepspeed_evoformer_attention,
         )
@@ -286,6 +287,9 @@ def main(args):
             output_name = f'{tag}_{args.config_preset}'
             if args.output_postfix is not None:
                 output_name = f'{output_name}_{args.output_postfix}'
+            model.output_name = output_name
+            model.output_dir = output_directory
+            model.use_doctor = args.use_doctor
 
             # Does nothing if the alignments have already been computed
             precompute_alignments(tags, seqs, alignment_dir, args)
@@ -317,6 +321,15 @@ def main(args):
                 k: torch.as_tensor(v, device=args.model_device)
                 for k, v in processed_feature_dict.items()
             }
+
+            model.feature_dict = feature_dict
+            model.processed_feature_dict = processed_feature_dict
+            model.config_preset = args.config_preset
+            model.multimer_ri_gap = args.multimer_ri_gap
+            model.subtract_plddt = args.subtract_plddt
+            model.feature_processor = feature_processor
+            model.cif_output = args.cif_output
+
 
             if args.trace_model:
                 if rounded_seqlen > cur_tracing_interval:
@@ -389,6 +402,10 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "template_mmcif_dir", type=str,
+    )
+    parser.add_argument(
+        "--use_doctor",
+        action=argparse.BooleanOptionalAction
     )
     parser.add_argument(
         "--use_precomputed_alignments", type=str, default=None,
