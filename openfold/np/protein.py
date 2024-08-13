@@ -466,10 +466,17 @@ def to_modelcif(prot: Protein) -> str:
     b_factors = prot.b_factors
     chain_index = prot.chain_index
 
+    if len(aatype.shape) > 1:
+        aatype = aatype[:, 0]  # use first column only (multiplicity = no. GPUs)
+
+    if len(residue_index.shape) > 1:
+            residue_index = residue_index[:, 0]  # same
+
     n = aatype.shape[0]
     if chain_index is None:
         chain_index = [0 for i in range(n)]
-
+    if len(chain_index.shape) > 1:
+        chain_index = chain_index[:, 0]  # use first column only (multiplicity = no. GPUs)
     system = modelcif.System(title='OpenFold prediction')
 
     # Finding chains and creating entities
