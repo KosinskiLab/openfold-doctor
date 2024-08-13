@@ -61,6 +61,8 @@ from openfold.utils.tensor_utils import (
     tensor_tree_map,
 )
 
+from openfold.doctor.visualize_evolution import intermediate_output
+
 
 class AlphaFold(nn.Module):
     """
@@ -82,6 +84,17 @@ class AlphaFold(nn.Module):
         self.template_config = self.config.template
         self.extra_msa_config = self.config.extra_msa
         self.seqemb_mode = config.globals.seqemb_mode_enabled
+
+        # self.tag = None
+        self.data = config.data
+        self.feature_dict = None
+        self.processed_feature_dict = None
+        self.output_name = None
+        self.output_dir = None
+        self.use_doctor = False
+        self.feature_processor = None
+
+        print(self.__dict__)
 
         # Main trunk + structure module
         if self.globals.is_multimer:
@@ -574,6 +587,8 @@ class AlphaFold(nn.Module):
                 num_recycles += 1
 
                 if not is_final_iter:
+                    if self.use_doctor:
+                        intermediate_output(self, outputs, batch)
                     del outputs
                     prevs = [m_1_prev, z_prev, x_prev]
                     del m_1_prev, z_prev, x_prev
