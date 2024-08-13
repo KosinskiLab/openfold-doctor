@@ -1,8 +1,10 @@
 import logging
 import os
-import numpy
+import numpy as np
 
 from openfold.np import protein
+from openfold.utils.tensor_utils import tensor_tree_map
+
 
 logger = logging.getLogger(__file__)
 logger.setLevel(level=logging.DEBUG)
@@ -10,7 +12,6 @@ logger.setLevel(level=logging.DEBUG)
 nseq = 0
 
 def intermediate_output(model, out, batch):
-    #from openfold.utils.script_utils import prep_output
     global nseq
 
     feature_dict = model.feature_dict
@@ -18,6 +19,9 @@ def intermediate_output(model, out, batch):
     config_preset = model.config_preset
     multimer_ri_gap = model.multimer_ri_gap
     #subtract_plddt = model.subtract_plddt
+
+    out = tensor_tree_map(lambda x: np.array(x.cpu()), out)
+    batch = tensor_tree_map(lambda x: np.array(x.cpu()), batch)
 
     unrelaxed_protein = prep_intermediate_output(out, batch, feature_dict, feature_processor, config_preset, multimer_ri_gap)
 
@@ -77,8 +81,8 @@ def prep_intermediate_output(out, batch, feature_dict, feature_processor, config
 
     # For multi-chain FASTAs
     ri = feature_dict["residue_index"]
-    chain_index = (ri - numpy.arange(ri.shape[0])) / multimer_ri_gap
-    chain_index = chain_index.astype(numpy.int64)
+    chain_index = (ri - np.arange(ri.shape[0])) / multimer_ri_gap
+    chain_index = chain_index.astype(np.int64)
     cur_chain = 0
     prev_chain_max = 0
     for i, c in enumerate(chain_index):
@@ -91,11 +95,11 @@ def prep_intermediate_output(out, batch, feature_dict, feature_processor, config
     unrelaxed_protein = protein.from_prediction(
         features=batch,
         result=out,
-        b_factors=plddt_b_factors,
         remove_leading_feature_dimension=False,
-        remark=remark,
-        parents=template_domain_names,
-        parents_chain_index=template_chain_index,
+        #b_factors=None,
+        #remark=remark,
+        #parents=template_domain_names,
+        #parents_chain_index=template_chain_index,
     )
 
     return unrelaxed_protein
