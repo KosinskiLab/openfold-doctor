@@ -54,6 +54,8 @@ from openfold.utils.trace_utils import (
 from scripts.precompute_embeddings import EmbeddingGenerator
 from scripts.utils import add_data_args
 
+from openfold.doctor.doctor import dr
+
 
 TRACING_INTERVAL = 50
 
@@ -287,9 +289,6 @@ def main(args):
             output_name = f'{tag}_{args.config_preset}'
             if args.output_postfix is not None:
                 output_name = f'{output_name}_{args.output_postfix}'
-            model.output_name = output_name
-            model.output_dir = output_directory
-            model.use_doctor = args.use_doctor
 
             # Does nothing if the alignments have already been computed
             precompute_alignments(tags, seqs, alignment_dir, args)
@@ -322,13 +321,17 @@ def main(args):
                 for k, v in processed_feature_dict.items()
             }
 
-            model.feature_dict = feature_dict
-            model.processed_feature_dict = processed_feature_dict
-            model.config_preset = args.config_preset
-            model.multimer_ri_gap = args.multimer_ri_gap
-            model.subtract_plddt = args.subtract_plddt
-            model.feature_processor = feature_processor
-            model.cif_output = args.cif_output
+            if args.use_doctor:
+                dr.in_use = True
+                dr.output_name = output_name
+                dr.output_dir = output_directory
+                dr.feature_dict = feature_dict
+                dr.processed_feature_dict = processed_feature_dict
+                dr.config_preset = args.config_preset
+                dr.multimer_ri_gap = args.multimer_ri_gap
+                dr.subtract_plddt = args.subtract_plddt
+                dr.feature_processor = feature_processor
+                dr.cif_output = args.cif_output
 
 
             if args.trace_model:

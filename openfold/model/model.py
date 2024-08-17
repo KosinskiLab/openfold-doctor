@@ -61,7 +61,7 @@ from openfold.utils.tensor_utils import (
     tensor_tree_map,
 )
 
-from openfold.doctor.visualize_evolution import intermediate_output
+from openfold.doctor.doctor import dr
 
 
 class AlphaFold(nn.Module):
@@ -86,15 +86,13 @@ class AlphaFold(nn.Module):
         self.seqemb_mode = config.globals.seqemb_mode_enabled
 
         # self.tag = None
-        self.data = config.data
-        self.feature_dict = None
-        self.processed_feature_dict = None
-        self.output_name = None
-        self.output_dir = None
-        self.use_doctor = False
-        self.feature_processor = None
-
-        print(self.__dict__)
+        # self.data = config.data
+        # self.feature_dict = None
+        # self.processed_feature_dict = None
+        # self.output_name = None
+        # self.output_dir = None
+        # self.use_doctor = False
+        # self.feature_processor = None
 
         # Main trunk + structure module
         if self.globals.is_multimer:
@@ -483,6 +481,10 @@ class AlphaFold(nn.Module):
         # [*, N, 3]
         x_prev = outputs["final_atom_positions"]
 
+        if dr.in_use:
+            assert dr.processed_feature_dict is not None
+            dr.intermediate_output(outputs)
+
         return outputs, m_1_prev, z_prev, x_prev, early_stop
 
     def _disable_activation_checkpointing(self):
@@ -587,8 +589,6 @@ class AlphaFold(nn.Module):
                 num_recycles += 1
 
                 if not is_final_iter:
-                    if self.use_doctor:
-                        intermediate_output(self, outputs, batch)
                     del outputs
                     prevs = [m_1_prev, z_prev, x_prev]
                     del m_1_prev, z_prev, x_prev
