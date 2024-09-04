@@ -237,6 +237,8 @@ class AlphaFold(nn.Module):
         # Controls whether the model uses in-place operations throughout
         # The dual condition accounts for activation checkpoints
         inplace_safe = not (self.training or torch.is_grad_enabled())
+        if dr.in_use:
+            dr.inplace_safe = inplace_safe
 
         # Prep some features
         seq_mask = feats["seq_mask"]
@@ -481,10 +483,6 @@ class AlphaFold(nn.Module):
         # [*, N, 3]
         x_prev = outputs["final_atom_positions"]
 
-        if dr.in_use:
-            assert dr.processed_feature_dict is not None
-            dr.intermediate_output(outputs)
-
         return outputs, m_1_prev, z_prev, x_prev, early_stop
 
     def _disable_activation_checkpointing(self):
@@ -571,6 +569,9 @@ class AlphaFold(nn.Module):
             fetch_cur_batch = lambda t: t[..., cycle_no]
             feats = tensor_tree_map(fetch_cur_batch, batch)
 
+            if dr.in_use:
+                dr.feats = feats
+
             # Enable grad iff we're training and it's the final recycling layer
             is_final_iter = cycle_no == (num_iters - 1) or early_stop
             with torch.set_grad_enabled(is_grad_enabled and is_final_iter):
@@ -585,6 +586,9 @@ class AlphaFold(nn.Module):
                     prevs,
                     _recycle=(num_iters > 1)
                 )
+
+                if dr.in_use:
+                    dr.intermediate_output(outputs)
 
                 num_recycles += 1
 
