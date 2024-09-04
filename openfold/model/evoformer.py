@@ -43,7 +43,12 @@ from openfold.model.triangular_multiplicative_update import (
 from openfold.utils.checkpointing import checkpoint_blocks, get_checkpoint_fn
 from openfold.utils.chunk_utils import chunk_layer, ChunkSizeTuner
 from openfold.utils.tensor_utils import add
+from openfold.doctor.doctor import dr
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__file__)
+logger.setLevel(level=logging.DEBUG)
 
 class MSATransition(nn.Module):
     """
@@ -392,6 +397,7 @@ class EvoformerBlock(MSABlock):
         fuse_projection_weights: bool,
         inf: float,
         eps: float,
+        linear = None,
     ):
         super(EvoformerBlock, self).__init__(c_m=c_m,
                                              c_z=c_z,
@@ -409,8 +415,12 @@ class EvoformerBlock(MSABlock):
                                              inf=inf,
                                              eps=eps)
 
+        logger.debug(f"EvoformerBlock init called...")
+
         # Specifically, seqemb mode does not use column attention
         self.no_column_attention = no_column_attention
+        if linear:
+            self.linear = linear
 
         if not self.no_column_attention:
             self.msa_att_col = MSAColumnAttention(
@@ -548,6 +558,10 @@ class EvoformerBlock(MSABlock):
             m, _ = input_tensors
         else:
             m = input_tensors[0]
+
+        if dr.in_use and self.linear:
+            logger.debug(f"Calling evoformer_output...")
+            dr.evoformer_output(m, z, self.linear)
 
         return m, z
 
@@ -826,6 +840,8 @@ class EvoformerStack(nn.Module):
         """
         super(EvoformerStack, self).__init__()
 
+        logger.debug(f"EvoformerStack init called...")
+
         self.blocks_per_ckpt = blocks_per_ckpt
         self.clear_cache_between_blocks = clear_cache_between_blocks
 
@@ -849,6 +865,7 @@ class EvoformerStack(nn.Module):
                 fuse_projection_weights=fuse_projection_weights,
                 inf=inf,
                 eps=eps,
+                linear=Linear(c_m, c_s),
             )
             self.blocks.append(block)
 
