@@ -63,7 +63,7 @@ def model_config(
     train=False, 
     low_prec=False, 
     long_sequence_inference=False,
-    use_deepspeed_evoformer_attention=False,
+    use_deepspeed_evoformer_attention=True,
 ):
     c = copy.deepcopy(config)
     # TRAINING PRESETS
