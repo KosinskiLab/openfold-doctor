@@ -417,10 +417,11 @@ class InvariantPointAttention(nn.Module):
             1.0 / (3 * (self.no_qk_points * 9.0 / 2))
         )
 
+
         if (inplace_safe):
-            pt_att *= head_weights
+            pt_att *= head_weights.cuda() if pt_att.is_cuda else head_weights
         else:
-            pt_att = pt_att * head_weights
+            pt_att = pt_att * head_weights.cuda() if pt_att.is_cuda else head_weights
 
         # [*, N_res, N_res, H]
         pt_att = torch.sum(pt_att, dim=-1) * (-0.5)
@@ -1071,6 +1072,7 @@ class StructureModule(nn.Module):
             inplace_safe=False,
             _offload_inference=False,
     ):
+
         s = evoformer_output_dict["single"]
 
         if mask is None:
@@ -1179,6 +1181,8 @@ class StructureModule(nn.Module):
         Returns:
             A dictionary of outputs
         """
+
+
         if(self.is_multimer):
             outputs = self._forward_multimer(evoformer_output_dict, aatype, mask, inplace_safe, _offload_inference)
         else:
