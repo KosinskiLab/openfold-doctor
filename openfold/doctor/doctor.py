@@ -40,14 +40,12 @@ class Doctor(metaclass=Singleton):
 
 
     def evoformer_output(self, m, z, linear):
-        logger.debug(f"evoformer_output called")
         n_seq = self.feats["msa_feat"].shape[-3]
         out = {}
         out["msa"] = m[..., :n_seq, :, :]
         out["pair"] = z
         s = linear(m[..., 0, :, :])
         out["single"] = s
-        logger.debug(f"qua 2")
 
         del z
 
@@ -58,29 +56,19 @@ class Doctor(metaclass=Singleton):
             mask=self.feats["seq_mask"].to(dtype=s.dtype),
             inplace_safe=self.inplace_safe,
             _offload_inference=self.globals.offload_inference)
-        logger.debug(f"after structure_module call")
         out["final_atom_positions"] = atom14_to_atom37(
             out["sm"]["positions"][-1], self.feats
         )
-        logger.debug(f"qua 4")
         out["final_atom_mask"] = self.feats["atom37_atom_exists"]
-        logger.debug(f"qua 5")
         out["final_affine_tensor"] = out["sm"]["frames"][-1]
-        logger.debug(f"after structure_module call")
-
-        logger.info(f"structure_model output: {out}")
 
         self.intermediate_output(out, True)
-        logger.debug(f"qua 7")
-
-
 
 
     def intermediate_output(self, out, from_evoformer=False):
         #feats passato in model.py r. 573
         #self.cycle_no += 1
         #self.feats = tensor_tree_map(lambda x: np.array(x.cpu()), batch)
-        logger.debug(f"intermediate_output called (from_evoformer: {from_evoformer}")
 
         _out = tensor_tree_map(lambda x: np.array(x.cpu()), out)
 
