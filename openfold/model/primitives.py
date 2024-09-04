@@ -203,7 +203,9 @@ class Linear(nn.Linear):
                 bias = self.bias.to(dtype=d) if self.bias is not None else None
                 return nn.functional.linear(input, self.weight.to(dtype=d), bias)
 
-        return nn.functional.linear(input, self.weight, self.bias)
+        return nn.functional.linear(input,
+                                    self.weight.cuda() if input.is_cuda else self.weight,
+                                    self.bias.cuda() if self.bias is not None and input.is_cuda else self.bias)
 
 
 class LayerNorm(nn.Module):
@@ -235,8 +237,8 @@ class LayerNorm(nn.Module):
             out = nn.functional.layer_norm(
                 x,
                 self.c_in,
-                self.weight,
-                self.bias,
+                self.weight.cuda() if x.is_cuda else self.weight,
+                self.bias.cuda() if self.bias is not None and x.is_cuda else self.bias,
                 self.eps,
             )
 
