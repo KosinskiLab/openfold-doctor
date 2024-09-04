@@ -27,11 +27,12 @@ dependencies:
   - mkl=2022.1
   - aria2
   - git
+  - libcublas=12.1.0.26
+  - pytorch=2.1.1
+  - pytorch=2.1.1*=*cuda12.1*
   - bioconda::hmmer
   - bioconda::hhsuite
   - bioconda::kalign2
-  - pytorch::pytorch=2.1
-  - pytorch::pytorch-cuda=12.1
   - pip:
       - deepspeed==0.12.4
       - dm-tree==0.1.6
