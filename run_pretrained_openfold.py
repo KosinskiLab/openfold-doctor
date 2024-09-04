@@ -24,7 +24,7 @@ import json
 
 logging.basicConfig()
 logger = logging.getLogger(__file__)
-logger.setLevel(level=logging.INFO)
+logger.setLevel(level=logging.DEBUG)
 
 import torch
 torch_versions = torch.__version__.split(".")
@@ -53,8 +53,8 @@ from openfold.utils.trace_utils import (
 
 from scripts.precompute_embeddings import EmbeddingGenerator
 from scripts.utils import add_data_args
-
 from openfold.doctor.doctor import dr
+from openfold.model.structure_module import StructureModule
 
 
 TRACING_INTERVAL = 50
@@ -332,6 +332,8 @@ def main(args):
                 dr.subtract_plddt = args.subtract_plddt
                 dr.feature_processor = feature_processor
                 dr.cif_output = args.cif_output
+                dr.structure_module = StructureModule(is_multimer=is_multimer, **config["model"]["structure_module"])
+                dr.globals = config.globals
 
 
             if args.trace_model:
