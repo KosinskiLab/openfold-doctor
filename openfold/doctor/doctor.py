@@ -4,6 +4,7 @@ import numpy as np
 
 from openfold.np import protein
 from openfold.utils.tensor_utils import tensor_tree_map
+from openfold.utils.feats import atom14_to_atom37
 
 
 logger = logging.getLogger(__file__)
@@ -21,7 +22,7 @@ class Singleton(type):
 class Doctor(metaclass=Singleton):
     def __init__(self):
         self.feature_dict = None
-        self._processed_feature_dict = None
+        self.feats = None
         self.output_name = None
         self.output_dir = None
         self.feature_processor = None
@@ -29,30 +30,69 @@ class Doctor(metaclass=Singleton):
         self.multimer_ri_gap = None
         #self.subtract_plddt = None
         self.cif_output = None
-        self.nseq = 0
         self.in_use = False
+        self.structure_module = None
+        self.cycle_no = 0
+        self.globals = None
+        self.feats = None
+        self.inplace_safe = None
+        self.num = 0
 
-    @property
-    def processed_feature_dict(self):
-        return self._processed_feature_dict
 
-    @processed_feature_dict.setter
-    def processed_feature_dict(self, val):
-        self._processed_feature_dict = tensor_tree_map(lambda x: np.array(x.cpu()), val)
-        assert self._processed_feature_dict is not None
+    def evoformer_output(self, m, z, linear):
+        logger.debug(f"evoformer_output called")
+        n_seq = self.feats["msa_feat"].shape[-3]
+        out = {}
+        out["msa"] = m[..., :n_seq, :, :]
+        out["pair"] = z
+        s = linear(m[..., 0, :, :])
+        out["single"] = s
+        logger.debug(f"qua 2")
+
+        del z
+
+        # Predict 3D structure
+        out["sm"] = self.structure_module(
+            out,
+            self.feats["aatype"],
+            mask=self.feats["seq_mask"].to(dtype=s.dtype),
+            inplace_safe=self.inplace_safe,
+            _offload_inference=self.globals.offload_inference)
+        logger.debug(f"after structure_module call")
+        out["final_atom_positions"] = atom14_to_atom37(
+            out["sm"]["positions"][-1], self.feats
+        )
+        logger.debug(f"qua 4")
+        out["final_atom_mask"] = self.feats["atom37_atom_exists"]
+        logger.debug(f"qua 5")
+        out["final_affine_tensor"] = out["sm"]["frames"][-1]
+        logger.debug(f"after structure_module call")
+
+        logger.info(f"structure_model output: {out}")
+
+        self.intermediate_output(out, True)
+        logger.debug(f"qua 7")
+
+
 
 
     def intermediate_output(self, out, from_evoformer=False):
+        #feats passato in model.py r. 573
+        #self.cycle_no += 1
+        #self.feats = tensor_tree_map(lambda x: np.array(x.cpu()), batch)
+        logger.debug(f"intermediate_output called (from_evoformer: {from_evoformer}")
 
-        out = tensor_tree_map(lambda x: np.array(x.cpu()), out)
+        _out = tensor_tree_map(lambda x: np.array(x.cpu()), out)
 
-        unrelaxed_protein = self.prep_intermediate_output(out)
+        unrelaxed_protein = self.prep_intermediate_output(_out)
+
+        n_seq = self.feats["msa_feat"].shape[-3]
 
         unrelaxed_file_suffix = f"{'_evoformer' if from_evoformer else ''}.pdb"  # _unrelaxed.pdb
         if self.cif_output:
             unrelaxed_file_suffix = f"{'_evoformer' if from_evoformer else ''}.cif"  # _unrelaxed.cif
         unrelaxed_output_path = os.path.join(
-            self.output_dir, f'{self.output_name}_{self.nseq:04d}{unrelaxed_file_suffix}'
+            self.output_dir, f'{self.output_name}_{self.num:04d}{unrelaxed_file_suffix}'
         )
 
         with open(unrelaxed_output_path, 'w') as fp:
@@ -61,9 +101,8 @@ class Doctor(metaclass=Singleton):
             else:
                 fp.write(protein.to_pdb(unrelaxed_protein))
 
+        self.num += 1
         logger.info(f"Output written to {unrelaxed_output_path}...")
-
-        self.nseq += 1
 
         # if model.save_outputs:
         #     output_dict_path = os.path.join(
@@ -108,7 +147,7 @@ class Doctor(metaclass=Singleton):
         chain_index = chain_index.astype(np.int64)
         cur_chain = 0
         prev_chain_max = 0
-        batch = self.processed_feature_dict
+        batch = tensor_tree_map(lambda x: np.array(x.cpu()), self.feats)
         for i, c in enumerate(chain_index):
             if c != cur_chain:
                 cur_chain = c
