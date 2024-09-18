@@ -415,8 +415,6 @@ class EvoformerBlock(MSABlock):
                                              inf=inf,
                                              eps=eps)
 
-        logger.debug(f"EvoformerBlock init called...")
-
         # Specifically, seqemb mode does not use column attention
         self.no_column_attention = no_column_attention
         if linear:
