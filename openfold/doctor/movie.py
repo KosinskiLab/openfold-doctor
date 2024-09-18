@@ -11,7 +11,7 @@ from MDAnalysis.analysis import align
 from PIL import Image, ImageDraw, ImageFont
 
 class ProteinMovieMaker:
-    def __init__(self, input_directory, output_movie_file, output_dcd_file, frame_duration_seconds=1, low_res=False):
+    def __init__(self, input_directory, output_movie_file, output_dcd_file, frame_duration_seconds=1, low_res=False, keep_data=False):
         self.input_directory = input_directory
         self.output_movie_file = output_movie_file
         self.output_dcd_file = output_dcd_file
@@ -23,7 +23,8 @@ class ProteinMovieMaker:
         self.object_name = "protein_trajectory"
         self.png_dir = "temp_png"
         self.pdb_dir = "temp_pdb"
-        self.low_res=low_res
+        self.low_res = low_res
+        self.keep_data = keep_data
 
     def cif_to_pdb(self):
         os.makedirs(self.pdb_dir, exist_ok=True)
@@ -250,11 +251,21 @@ class ProteinMovieMaker:
     def run(self):
         # TODO maybe it'd be better having export_movie and export_traj as separate functions:
         # TODO embed first 3 functions just after init...
+
+        # pymol in cmd mode (no gui, quiet)
+        pymol.finish_launching(['pymol', '-cq'])
+        
         self.cif_to_pdb()
         self.center_and_align_pdbs()
         self.load_pdbs()
         self.export_movie()
         self.export_traj()
+        if not self.keep_data:
+            self.clean_up()
+
+        # quit pymol
+        cmd.quit()
+
 
 
 if __name__ == "__main__":
@@ -268,20 +279,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # pymol in cmd mode (no gui, quiet)
-    pymol.finish_launching(['pymol', '-cq'])
-
     mmaker = ProteinMovieMaker(
         input_directory=args.cif_directory,
         output_movie_file=args.output_movie_file,
         output_dcd_file=args.output_dcd_file,
         frame_duration_seconds=args.frame_duration_seconds,
-        low_res=args.low_res
+        low_res=args.low_res,
+        keep_data=args.keep_data
     )
     mmaker.run()
-    if not args.keep_data:
-        mmaker.clean_up()
-    # quit pymol
-    cmd.quit()
-
 
