@@ -54,6 +54,7 @@ from openfold.utils.trace_utils import (
 from scripts.precompute_embeddings import EmbeddingGenerator
 from scripts.utils import add_data_args
 from openfold.doctor.doctor import dr
+from openfold.doctor.movie import ProteinMovieMaker
 from openfold.model.structure_module import StructureModule
 
 
@@ -321,6 +322,10 @@ def main(args):
                 for k, v in processed_feature_dict.items()
             }
 
+            if args.export_movie and not args.use_doctor:
+                args.use_doctor = True
+                logging.warning("Bad arguments combination. --use_doctor must be set if --export_movie is set. --use_doctor automatically set to True")
+
             if args.use_doctor:
                 dr.in_use = True
                 dr.output_name = output_name
@@ -398,6 +403,17 @@ def main(args):
 
                 logger.info(f"Model output written to {output_dict_path}...")
 
+            if args.export_movie:
+                mmaker = ProteinMovieMaker(
+                    input_directory=args.cif_directory,
+                    output_movie_file=args.output_movie_file,
+                    output_dcd_file=args.output_dcd_file,
+                    frame_duration_seconds=args.frame_duration_seconds,
+                    low_res=args.low_res,
+                    keep_data=args.keep_data
+                )   
+                mmaker.run()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -410,6 +426,10 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--use_doctor",
+        action=argparse.BooleanOptionalAction
+    )
+    parser.add_argument(
+        "--export_movie",
         action=argparse.BooleanOptionalAction
     )
     parser.add_argument(
