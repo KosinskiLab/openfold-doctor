@@ -53,9 +53,11 @@ from openfold.utils.trace_utils import (
 
 from scripts.precompute_embeddings import EmbeddingGenerator
 from scripts.utils import add_data_args
+from openfold.doctor.utils import ranged_type
 from openfold.doctor.doctor import dr
 from openfold.doctor.movie import ProteinMovieMaker
 from openfold.model.structure_module import StructureModule
+from openfold.doctor.representation_exporter import RepresentationExporter
 
 
 TRACING_INTERVAL = 50
@@ -322,9 +324,22 @@ def main(args):
                 for k, v in processed_feature_dict.items()
             }
 
-            if args.export_movie and not args.use_doctor:
+            if args.protein_movie and not args.use_doctor:
                 args.use_doctor = True
-                logging.warning("Bad arguments combination. --use_doctor must be set if --export_movie is set. --use_doctor automatically set to True")
+                logging.warning("Bad arguments combination. --use_doctor must be set if --protein_movie is set. --use_doctor automatically set to True.")
+
+            if args.low_res_movie and not args.protein_movie:
+                logging.warning("Bad arguments combination. --low_res_movie ignored. It should be used in combination with --protein_movie.")
+
+            if args.keep_movie_data and not args.protein_movie:
+                logging.warning("Bad arguments combination. --keep_movie_data ignored. It should be used in combination with --protein_movie.")
+
+            if args.frame_duration_seconds and not args.protein_movie:
+                logging.warning("Bad arguments combination. --frame_duration_seconds ignored. It should be used in combination with --protein_movie.")
+
+            if args.representation_movies and not args.representation_export:
+                args.representation_export = True
+                logging.warning("Bad arguments combination. --representation_export must be set if --representation_movies is set. --representation_export automatically set to True.")
 
             if args.use_doctor:
                 dr.in_use = True
@@ -353,6 +368,10 @@ def main(args):
                         f"Tracing time: {tracing_time}"
                     )
                     cur_tracing_interval = rounded_seqlen
+
+            #TODO separate msa and pair export args?
+            if args.representation_export:
+                repr_exporter = RepresentationExporter(model, output_dir=os.path.join(output_directory, "heatmaps"))
 
             out = run_model(model, processed_feature_dict, tag, args.output_dir)
 
@@ -403,16 +422,18 @@ def main(args):
 
                 logger.info(f"Model output written to {output_dict_path}...")
 
-            if args.export_movie:
+            if args.protein_movie:
+                
                 mmaker = ProteinMovieMaker(
-                    input_directory=args.cif_directory,
-                    output_movie_file=args.output_movie_file,
-                    output_dcd_file=args.output_dcd_file,
+                    input_directory=dr.output_dir,
                     frame_duration_seconds=args.frame_duration_seconds,
-                    low_res=args.low_res,
-                    keep_data=args.keep_data
+                    low_res=args.low_res_movie,
+                    keep_data=args.keep_movie_data
                 )   
                 mmaker.run()
+
+            if args.representation_movies:
+                representation_exporter.pngs_to_mpeg()
 
 
 if __name__ == "__main__":
@@ -426,12 +447,39 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--use_doctor",
-        action=argparse.BooleanOptionalAction
+        action="store_true", default=False,
+        help=""""""
     )
     parser.add_argument(
-        "--export_movie",
-        action=argparse.BooleanOptionalAction
+        "--protein_movie",
+        action="store_true", default=False,
+        help="""Generate protein movie and trajectory from cif files"""    
     )
+    parser.add_argument(
+        "--representation_export",
+        action="store_true", default=False,
+        help="""Generate msa and pair representation heatmaps"""
+    )
+    parser.add_argument(
+        "--representation_movies",
+        action="store_true", default=False,
+        help="""Generate msa and pair representation movies from heatmaps"""
+    )
+    parser.add_argument(
+        "--low_res_movie",
+        action="store_true", default=False,
+        help="""Generate low resolution movie (default: False)"""
+    )
+    parser.add_argument(
+        "--keep_movie_data",
+        action="store_true", default=False,
+        help="""Keep intermediate movie data (pdbs and pngs) for debugging (default: False)"""
+    )
+    parser.add_argument(
+        "--frame_duration_seconds", type=ranged_type(float, 0.1, 100.0), default=1.0,
+        help="""Frame duration in seconds (default: 1.0, min: 0.1, max: 100.0)"""
+    )
+
     parser.add_argument(
         "--use_precomputed_alignments", type=str, default=None,
         help="""Path to alignment directory. If provided, alignment computation 
