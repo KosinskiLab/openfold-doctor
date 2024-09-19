@@ -433,7 +433,7 @@ def main(args):
                 mmaker.run()
 
             if args.representation_movies:
-                representation_exporter.pngs_to_mpeg()
+                repr_exporter.pngs_to_mpg()
 
 
 if __name__ == "__main__":
