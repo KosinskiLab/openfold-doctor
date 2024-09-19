@@ -55,7 +55,7 @@ class RepresentationExporter:
         plt.xlabel("seq lenght")
         plt.ylabel("N alignments") if which == "msa" else plt.ylabel("seq length")
 
-        filepath = os.path.join(self.path.join(self.output_dir, which), f"{filename}.png")
+        filepath = os.path.join(os.path.join(self.output_dir, which), f"{filename}.png")
         plt.savefig(filepath)
         plt.close()
         logger.info(f"Heatmap saved: {filepath}")
