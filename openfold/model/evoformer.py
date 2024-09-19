@@ -558,7 +558,6 @@ class EvoformerBlock(MSABlock):
             m = input_tensors[0]
 
         if dr.in_use and self.linear:
-            logger.debug(f"Calling evoformer_output...")
             dr.evoformer_output(m, z, self.linear)
 
         return m, z
@@ -837,8 +836,6 @@ class EvoformerStack(nn.Module):
                 Whether to dynamically tune the module's chunk size
         """
         super(EvoformerStack, self).__init__()
-
-        logger.debug(f"EvoformerStack init called...")
 
         self.blocks_per_ckpt = blocks_per_ckpt
         self.clear_cache_between_blocks = clear_cache_between_blocks
