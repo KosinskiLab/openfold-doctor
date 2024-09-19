@@ -38,8 +38,8 @@ class RepresentationExporter:
             data = data.detach().cpu().numpy()
         
         stage_num = 0 if stage == "before" else 1
-        filename = f"{which}_iter_{iter}_{stage_num}"
-        title = f"{which} representation {stage} recycling {iter}"
+        filename = f"{which}_iter_{iteration}_{stage_num}"
+        title = f"{which} representation {stage} recycling {iteration}"
 
         # "squash" the third dimension using average along third axis
         # N.B. msa shape: (N_alignments, seq_length, msa_dim), pair shape: (seq_length, seq_length, pair_dim)
@@ -55,7 +55,7 @@ class RepresentationExporter:
         plt.xlabel("seq lenght")
         plt.ylabel("N alignments") if which == "msa" else plt.ylabel("seq length")
 
-        filepath = os.path.join(self.output_dir, f"{filename}.png")
+        filepath = os.path.join(self.path.join(self.output_dir, which), f"{filename}.png")
         plt.savefig(filepath)
         plt.close()
         logger.info(f"Heatmap saved: {filepath}")
