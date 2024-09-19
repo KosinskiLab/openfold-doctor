@@ -58,7 +58,7 @@ class RepresentationExporter:
         filepath = os.path.join(os.path.join(self.output_dir, which), f"{filename}.png")
         plt.savefig(filepath)
         plt.close()
-        logger.info(f"Heatmap saved: {filepath}")
+        logger.debug(f"Heatmap saved: {filepath}")
 
     def pngs_to_mpg(self, framerate=1):
         if self.export_msa:
