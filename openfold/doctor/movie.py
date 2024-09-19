@@ -9,9 +9,13 @@ import gemmi
 import MDAnalysis as mda
 from MDAnalysis.analysis import align
 from PIL import Image, ImageDraw, ImageFont
+import logging
+
+logger = logging.getLogger(__file__)
+logger.setLevel(level=logging.DEBUG)
 
 class ProteinMovieMaker:
-    def __init__(self, input_directory, output_movie_file, output_dcd_file, frame_duration_seconds=1, low_res=False, keep_data=False):
+    def __init__(self, input_directory, output_movie_file="protein_movie.mp4", output_dcd_file="protein_trajectory.dcd", frame_duration_seconds=1, low_res=False, keep_data=False):
         self.input_directory = input_directory
         self.output_movie_file = output_movie_file
         self.output_dcd_file = output_dcd_file
@@ -21,8 +25,8 @@ class ProteinMovieMaker:
         )
         self.pdb_files = []
         self.object_name = "protein_trajectory"
-        self.png_dir = "temp_png"
-        self.pdb_dir = "temp_pdb"
+        self.png_dir = os.path.join(input_directory, "temp_png")
+        self.pdb_dir = os.path.join(input_directory, "temp_pdb")
         self.low_res = low_res
         self.keep_data = keep_data
 
@@ -51,7 +55,7 @@ class ProteinMovieMaker:
             # structure.remove_hydrogens()  # TODO optional, remove hydrogen if not needed; should we?
             structure.write_pdb(pdb_file)
 
-            print(f"Successfully converted {cif_file} to {pdb_file}, with scaling applied.")
+            logger.debug(f"Successfully converted {cif_file} to {pdb_file}, with scaling applied.")
             self.pdb_files.append(pdb_file)
 
         if not self.pdb_files:
@@ -86,7 +90,7 @@ class ProteinMovieMaker:
             aligned_pdb_files.append(aligned_pdb_file)
 
         self.pdb_files = aligned_pdb_files
-        print(f"Centered and aligned pdb files saved to {centered_pdb_dir}.")
+        logger.debug(f"Centered and aligned pdb files saved to {centered_pdb_dir}.")
 
     def load_pdbs(self):
         cmd.reinitialize() 
@@ -98,7 +102,7 @@ class ProteinMovieMaker:
         for i, pdb_file in enumerate(self.pdb_files[1:], start=2):
             cmd.load(pdb_file, self.object_name, state=i)
 
-        print(f"Loaded {len(self.pdb_files)} pdb files into pymol as states in object '{self.object_name}'.")
+        logger.debug(f"Loaded {len(self.pdb_files)} pdb files into pymol as states in object '{self.object_name}'.")
 
     def export_movie(self):
         os.makedirs(self.png_dir, exist_ok=True)
@@ -146,7 +150,7 @@ class ProteinMovieMaker:
 
             frame_filename = os.path.join(self.png_dir, f"frame{state:04d}.png")
             cmd.png(frame_filename, width=image_width, height=image_height, ray=1)
-            print(f"Rendered frame {state}/{total_frames}")
+            logger.info(f"Rendered frame {state}/{total_frames}")
 
 
             pdb_file = self.pdb_files[i]
@@ -166,7 +170,7 @@ class ProteinMovieMaker:
 
             self.label_image(frame_filename, text)
 
-        print(f"png frames saved to {self.png_dir}")
+        logger.debug(f"png frames saved to {self.png_dir}")
 
         self.create_ffmpeg_list()
         self.pngs_to_mpeg()
