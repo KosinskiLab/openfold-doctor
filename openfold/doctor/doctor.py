@@ -90,7 +90,7 @@ class Doctor(metaclass=Singleton):
                 fp.write(protein.to_pdb(unrelaxed_protein))
 
         self.num += 1
-        logger.info(f"Output written to {unrelaxed_output_path}...")
+        logger.debug(f"Output written to {unrelaxed_output_path}...")
 
         # if model.save_outputs:
         #     output_dict_path = os.path.join(
