@@ -84,16 +84,10 @@ class AlphaFold(nn.Module):
         self.template_config = self.config.template
         self.extra_msa_config = self.config.extra_msa
         self.seqemb_mode = config.globals.seqemb_mode_enabled
-
-        # self.tag = None
-        # self.data = config.data
-        # self.feature_dict = None
-        # self.processed_feature_dict = None
-        # self.output_name = None
-        # self.output_dir = None
-        # self.use_doctor = False
-        # self.feature_processor = None
-
+        
+        self.representation_hook = None
+        self.iter_num = -1
+        
         # Main trunk + structure module
         if self.globals.is_multimer:
             self.input_embedder = InputEmbedderMultimer(
@@ -218,6 +212,8 @@ class AlphaFold(nn.Module):
         return diff <= self.config.recycle_early_stop_tolerance
 
     def iteration(self, feats, prevs, _recycle=True):
+        self.iter_num += 1  # starts at -1
+    
         # Primary output dictionary
         outputs = {}
 
@@ -414,6 +410,9 @@ class AlphaFold(nn.Module):
                     _mask_trans=self.config._mask_trans,
                 )
 
+        if self.representation_hook is not None:
+            self.representation_hook(m, z, stage="before", iteration=self.iter_num)
+
         # Run MSA + pair embeddings through the trunk of the network
         # m: [*, S, N, C_m]
         # z: [*, N, N, C_z]
@@ -445,6 +444,9 @@ class AlphaFold(nn.Module):
                 inplace_safe=inplace_safe,
                 _mask_trans=self.config._mask_trans,
             )
+
+        if self.representation_hook is not None:
+            self.representation_hook(m, z, stage="after", iteration=self.iter_num)
 
         outputs["msa"] = m[..., :n_seq, :, :]
         outputs["pair"] = z
