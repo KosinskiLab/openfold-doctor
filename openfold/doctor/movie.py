@@ -230,7 +230,7 @@ class ProteinMovieMaker:
             '-i', 'images.txt',
             '-vsync', 'vfr',
             '-pix_fmt', 'yuv420p',
-            os.path.abspath(self.output_movie_file)
+            os.path.abspath(os.path.join(list_file_path, self.output_movie_file))
         ]
 
         try:
