@@ -159,7 +159,10 @@ class ProteinMovieMaker:
             # extract "frame" number immediately before _evoformer.pdb or .pdb
             # TODO clearly not the best solution...
             match = re.search(r'_(\d+)(?:_evoformer)?\.pdb$', pdb_basename)
-            number = int(match.group(1))
+            try:
+                number = int(match.group(1))
+            except Exception as e:
+                continue
 
             if "evoformer" in pdb_basename:
                 y = number % 48  # 48 blocks in the evoformer stack; let's hope it does not change
