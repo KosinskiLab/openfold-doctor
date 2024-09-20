@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import torch
 import logging
+import subprocess
 
 logger = logging.getLogger(__file__)
 logger.setLevel(level=logging.DEBUG)
@@ -38,7 +39,8 @@ class RepresentationExporter:
             data = data.detach().cpu().numpy()
         
         stage_num = 0 if stage == "before" else 1
-        filename = f"{which}_iter_{iteration}_{stage_num}"
+        frame_number = iteration * 2 + (0 if stage == "before" else 1)
+        filename = f"{which}_{frame_number:02d}"
         title = f"{which} representation {stage} recycling {iteration}"
 
         # "squash" the third dimension using average along third axis
@@ -68,7 +70,7 @@ class RepresentationExporter:
 
     def _pngs_to_mpg(self, which, framerate=1):
         pngs_output_dir = os.path.join(self.output_dir, which)
-        frame_pattern = os.path.join(pngs_output_dir, f"{which}_iter_%01d_%01d.png")
+        frame_pattern = os.path.join(pngs_output_dir, f"{which}_%02d.png")
         output_path = os.path.join(pngs_output_dir, f"{which}_movie.mp4")
 
         ffmpeg_cmd = [
