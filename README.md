@@ -55,7 +55,77 @@ Continue with the [original OpenFold installation process](https://github.com/aq
 Ensure you follow all the steps outlined in the OpenFold installation guide to set up the environment correctly with the new dependencies introduced by OpenfoldDoctor.
 
 ## 📈 Usage
-After installation, you can use OpenfoldDoctor's features to inspect and visualize the protein folding process. Refer to the documentation and examples provided in the repository for detailed usage instructions.
+
+This section covers how to utilize all the extensions added to the `pl_upgrades` branch of the official OpenFold repository through OpenfoldDoctor.
+
+### 1. **Exporting intermediate protein structures**
+
+**Description**: Capture and save all intermediate protein structures generated during the inference process.
+
+**How to**:
+
+When executing the folding simulation, use the `--use_doctor` flag to enable the export of intermediate structures.
+
+  ```bash
+  python run_openfold.py [your usual openfold flags] --use_doctor
+  ```
+
+To generate a **movie of the protein structure evolution** during the inference, you can use the following additional flags:
+- `--protein_movie`: enables the movie generation
+- `--frame_duration_seconds N`: duration of each frame in seconds (optional; default: 1)
+- `--low_res_movie`: exports low resolution png frames for a low resolution movie (optional; default: False)
+- `--keep_movie_data`: preserve all intermediate files used in the movie generation process, i.e., png frames and pdb files (optional; default: False)
+
+Example:
+  ```bash
+  python run_openfold.py [your usual openfold flags] --protein_movie --frame_durations_seconds 1.5 --low_res_movie --keep_movie_data
+  ```
+
+The `--protein_movie` flag automatically enables also the `--use_doctor flag`.
+
+### 2. **Exporting MSA and pair representations**
+
+**Description**: Capture the MSA and pair representations before and after they are processed by the evoformer stack. Export them as heatmaps, and optionally generate movies showing their evolution during the inference process.
+
+**How to**:
+
+When executing the folding simulation, use the `--representation_export` flag to enable the export of intermediate structures as png heatmaps. The files will be saved in two separate folders -- `msa` and `pair` -- under your main output folder.
+
+  ```bash
+  python run_openfold.py [your usual openfold flags] --representation_export
+  ```
+
+To generate a **movie of the MSA and pair representation evolution** during the inference, you can use the following additional flag:
+- `--representations_movie`: enables the movie generation
+
+The movies generated for the MSA and pair representation will be saved under the `msa` and `pair` folders, respectively, together with the heatmap png images.
+
+### 3. **A complete example using all features**
+
+  ```bash
+   62 python run_pretrained_openfold.py \
+        $INPUT_FASTA_DIR \
+        $TEMPLATE_MMCIF_DIR \
+        --output_dir $OUTPUT_DIR \
+        --config_preset model_1_ptm \
+        --uniref90_database_path $BASE_DATA_DIR/uniref90/uniref90.fasta \
+        --mgnify_database_path $BASE_DATA_DIR/mgnify/mgy_clusters_2018_12.fa \
+        --pdb70_database_path $BASE_DATA_DIR/pdb70/pdb70 \
+        --uniclust30_database_path $BASE_DATA_DIR/uniclust30/uniclust30_2018_08/uniclust30_2018_08 \
+        --bfd_database_path $BASE_DATA_DIR/bfd/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt \
+        --model_device "cuda:0" \
+        --hhblits_binary_path $HHSUITE_BASE_DIR/hhblits \
+        --hhsearch_binary_path $HHSUITE_BASE_DIR/hhsearch \
+        --kalign_binary_path $KALIGN_PATH \
+        --save_outputs \
+        --cif_output \
+        --skip_relaxation \
+        --protein_movie \
+        --frame_duration_seconds 0.5 \
+        --low_res_movie \
+        --keep_movie_data \
+        --representation_movie
+  ```
 
 ## 🔗 Additional Resources
 - **OpenFold repository**: https://github.com/aqlaboratory/openfold
