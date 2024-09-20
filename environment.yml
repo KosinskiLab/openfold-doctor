@@ -1,40 +1,47 @@
-name: openfold-env 
+name: of-env
 channels:
+  - defaults
   - conda-forge
-  - bioconda
-  - pytorch
-  - nvidia 
 dependencies:
-  - python=3.10
-  - libgcc=7.2
-  - setuptools=59.5.0
-  - pip
-  - openmm=7.7
-  - pdbfixer
-  - pytorch-lightning
+  - python==3.10.14
+  - aria2
+  - awscli
+  - bioconda::hhsuite
+  - bioconda::hmmer
+  - bioconda::kalign2
   - biopython
-  - numpy
+  - git
+  - libcublas=12.1.0.26
+  - libgcc=7.2
+  - mkl=2022.1
+  - ml-collections
+  - modelcif==0.7
+  - numpy[version='<2']
+  - openmm=7.7
   - pandas
-  - PyYAML==5.4.1
+  - pdbfixer
+  - pip
+  - pytorch-lightning
+  - pytorch[version='2.1.1.*,2.1.1.*',build=*cuda12.1*]
+  - pyyaml==5.4.1
   - requests
   - scipy
+  - setuptools=59.5.0
   - tqdm==4.62.2
   - typing-extensions
   - wandb
-  - modelcif==0.7
-  - awscli
-  - ml-collections
-  - mkl=2022.1
-  - aria2
-  - git
-  - libcublas=12.1.0.26
-  - pytorch=2.1.1
-  - pytorch=2.1.1*=*cuda12.1*
-  - bioconda::hmmer
-  - bioconda::hhsuite
-  - bioconda::kalign2
+  - pymol-open-source
+  - gemmi
+  - mdanalysis
   - pip:
       - deepspeed==0.12.4
+      - dllogger==1.0.0
       - dm-tree==0.1.6
-      - git+https://github.com/NVIDIA/dllogger.git
-      - flash-attn 
+      - einops==0.8.0
+      - flash-attn==2.6.3
+      - hjson==3.1.0
+      - ninja==1.11.1.1
+      - openfold==2.0.0
+      - py-cpuinfo==9.0.0
+      - pynvml==11.5.3
+
