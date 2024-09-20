@@ -1,56 +1,66 @@
-![header ](imgs/of_banner.png)
-_Figure: Comparison of OpenFold and AlphaFold2 predictions to the experimental structure of PDB 7KDX, chain B._
+# OpenfoldDoctor
 
-# OpenFold
+**OpenfoldDoctor** is an extension of the [OpenFold](https://github.com/aqlaboratory/openfold) project, designed to enhance protein folding simulations with advanced inspection capabilities. With OpenfoldDoctor, users can gain deeper insights into the folding process through various export functionalities.
 
-A faithful but trainable PyTorch reproduction of DeepMind's 
-[AlphaFold 2](https://github.com/deepmind/alphafold).
+## 🚀 Features
 
-# Documentation
-See our new home for docs at [openfold.readthedocs.io](https://openfold.readthedocs.io/en/latest/), with instructions for installation and model inference/training.
+- **Export intermediate protein structures**: Capture and export all intermediate states of protein structures during the folding simulation.
+- **Folding progression movie**: Generate a "movie" showing the trajectory of protein folding, providing a visual representation of the entire process.
+- **MSA and pair representations**:
+  - **MSA**: Visualize Multiple Sequence Alignment (MSA) data through heatmaps.
+  - **Pair representation**: Export heatmaps of pairwise interactions at each iteration of the simulation.
 
-Much of the content from this page may be found [here.](https://github.com/aqlaboratory/openfold/blob/main/docs/source/original_readme.md)
+## 📦 Installation
 
-## Copyright Notice
+To get started with OpenfoldDoctor, follow these steps:
 
-While AlphaFold's and, by extension, OpenFold's source code is licensed under
-the permissive Apache Licence, Version 2.0, DeepMind's pretrained parameters 
-fall under the CC BY 4.0 license, a copy of which is downloaded to 
-`openfold/resources/params` by the installation script. Note that the latter
-replaces the original, more restrictive CC BY-NC 4.0 license as of January 2022.
+### 1. **Clone the original OpenFold repository**
 
-## Contributing
+Begin by cloning the original OpenFold repository from GitHub:
 
-If you encounter problems using OpenFold, feel free to create an issue! We also
-welcome pull requests from the community.
-
-## Citing this Work
-
-Please cite our paper:
-
-```bibtex
-@article {Ahdritz2022.11.20.517210,
-	author = {Ahdritz, Gustaf and Bouatta, Nazim and Floristean, Christina and Kadyan, Sachin and Xia, Qinghui and Gerecke, William and O{\textquoteright}Donnell, Timothy J and Berenberg, Daniel and Fisk, Ian and Zanichelli, Niccolò and Zhang, Bo and Nowaczynski, Arkadiusz and Wang, Bei and Stepniewska-Dziubinska, Marta M and Zhang, Shang and Ojewole, Adegoke and Guney, Murat Efe and Biderman, Stella and Watkins, Andrew M and Ra, Stephen and Lorenzo, Pablo Ribalta and Nivon, Lucas and Weitzner, Brian and Ban, Yih-En Andrew and Sorger, Peter K and Mostaque, Emad and Zhang, Zhao and Bonneau, Richard and AlQuraishi, Mohammed},
-	title = {{O}pen{F}old: {R}etraining {A}lpha{F}old2 yields new insights into its learning mechanisms and capacity for generalization},
-	elocation-id = {2022.11.20.517210},
-	year = {2022},
-	doi = {10.1101/2022.11.20.517210},
-	publisher = {Cold Spring Harbor Laboratory},
-	URL = {https://www.biorxiv.org/content/10.1101/2022.11.20.517210},
-	eprint = {https://www.biorxiv.org/content/early/2022/11/22/2022.11.20.517210.full.pdf},
-	journal = {bioRxiv}
-}
+```bash
+git clone https://github.com/aqlaboratory/openfold.git
 ```
-If you use OpenProteinSet, please also cite:
 
-```bibtex
-@misc{ahdritz2023openproteinset,
-      title={{O}pen{P}rotein{S}et: {T}raining data for structural biology at scale}, 
-      author={Gustaf Ahdritz and Nazim Bouatta and Sachin Kadyan and Lukas Jarosch and Daniel Berenberg and Ian Fisk and Andrew M. Watkins and Stephen Ra and Richard Bonneau and Mohammed AlQuraishi},
-      year={2023},
-      eprint={2308.05326},
-      archivePrefix={arXiv},
-      primaryClass={q-bio.BM}
-}
+### 2. Navigate to the OpenFold Directory
+Move into the cloned OpenFold directory:
+
+```bash
+cd openfold
 ```
-Any work that cites OpenFold should also cite [AlphaFold](https://www.nature.com/articles/s41586-021-03819-2) and [AlphaFold-Multimer](https://www.biorxiv.org/content/10.1101/2021.10.04.463034v1) if applicable.
+
+### 3. Download the OpenfoldDoctor patch
+Download the `openfold_doctor.patch` file from the OpenfoldDoctor releases. Ensure you save the patch file to a known location on your local machine.
+
+### 4. Checkout the `pl_upgrades branch`
+Switch to the `pl_upgrades` branch and reset it to the specific commit `3bec3e9b2d1e8bdb83887899102eff7d42dc2ba9`:
+
+```bash
+git checkout pl_upgrades
+git reset --hard 3bec3e9b2d1e8bdb83887899102eff7d42dc2ba9
+```
+
+### 5. Apply the OpenfoldDoctor patch
+Apply the downloaded patch using to incorporate OpenfoldDoctor's enhancements:
+
+```bash
+git am --3way /path/to/openfold_doctor.patch
+```
+
+**Note**: Replace `/path/to/` with the actual path to your downloaded `openfold_doctor.patch` file.
+
+### 6. Proceed with OpenFold installation
+Continue with the [original OpenFold installation process](https://github.com/aqlaboratory/openfold/blob/pl_upgrades/README.md).
+
+Ensure you follow all the steps outlined in the OpenFold installation guide to set up the environment correctly with the new dependencies introduced by OpenfoldDoctor.
+
+## 📈 Usage
+After installation, you can use OpenfoldDoctor's features to inspect and visualize the protein folding process. Refer to the documentation and examples provided in the repository for detailed usage instructions.
+
+## 🔗 Additional Resources
+- **OpenFold repository**: https://github.com/aqlaboratory/openfold
+- **OpenfoldDoctor releases**: https://github.com/lgiannantoni/openfold/releases
+- **Issues and support**: If you encounter any issues, feel free to open an issue on the [OpenfoldDoctor GitHub repository](https://github.com/lgiannantoni/openfold/issues).
+
+## 📝 Contributing
+Contributions are welcome! Please fork the repository and submit a pull request with your enhancements or bug fixes.
