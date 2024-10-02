@@ -58,7 +58,7 @@ from openfold.doctor.doctor import dr
 from openfold.doctor.movie import ProteinMovieMaker
 from openfold.model.structure_module import StructureModule
 from openfold.doctor.representation_exporter import RepresentationExporter
-
+from openfold.doctor.structure_exporter import PDBExporter
 
 TRACING_INTERVAL = 50
 
@@ -369,6 +369,9 @@ def main(args):
                     )
                     cur_tracing_interval = rounded_seqlen
 
+            if args.intermediate_structures_export:
+                str_exporter = PDBExporter(model, output_dir=os.path.join(output_directory, "pdb_structures"))
+            
             #TODO separate msa and pair export args?
             if args.representation_export:
                 repr_exporter = RepresentationExporter(model, output_dir=os.path.join(output_directory, "heatmaps"))
@@ -447,6 +450,11 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--use_doctor",
+        action="store_true", default=False,
+        help=""""""
+    )
+    parser.add_argument(
+        "--intermediate_structures_export",
         action="store_true", default=False,
         help=""""""
     )
