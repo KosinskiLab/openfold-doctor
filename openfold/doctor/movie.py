@@ -23,6 +23,8 @@ class ProteinMovieMaker:
         self.cif_files = sorted(
             [os.path.join(self.input_directory, f) for f in os.listdir(self.input_directory) if f.endswith('.cif')]
         )
+        if len(self.cif_files) == 0:
+            raise FileNotFoundError(f"No .cif files found in input_directory {self.input_directory}")
         self.pdb_files = []
         self.object_name = "protein_trajectory"
         self.png_dir = os.path.join(input_directory, "temp_png")
@@ -43,20 +45,21 @@ class ProteinMovieMaker:
 
             # multiply coordinates by 10 for "evoformer" files
             # TODO this is almost random and should be fixed in openfold and/or dr output...
-            if "evoformer" in cif_file:
-                for model in structure:
-                    for chain in model:
-                        for residue in chain:
-                            for atom in residue:
-                                atom.pos.x *= 10 
-                                atom.pos.y *= 10
-                                atom.pos.z *= 10
+            #if "evoformer" in cif_file:
+            #    for model in structure:
+            #        for chain in model:
+            #            for residue in chain:
+            #                for atom in residue:
+            #                    atom.pos.x *= 10 
+            #                    atom.pos.y *= 10
+            #                    atom.pos.z *= 10
 
             # structure.remove_hydrogens()  # TODO optional, remove hydrogen if not needed; should we?
             structure.write_pdb(pdb_file)
 
             logger.debug(f"Successfully converted {cif_file} to {pdb_file}, with scaling applied.")
             self.pdb_files.append(pdb_file)
+            self.pdb_files.sort()
 
         if not self.pdb_files:
             raise FileNotFoundError("No pdb files were created from cif files.")
@@ -89,7 +92,7 @@ class ProteinMovieMaker:
 
             aligned_pdb_files.append(aligned_pdb_file)
 
-        self.pdb_files = aligned_pdb_files
+        self.pdb_files = sorted(aligned_pdb_files)
         logger.debug(f"Centered and aligned pdb files saved to {centered_pdb_dir}.")
 
     def load_pdbs(self):
@@ -230,7 +233,7 @@ class ProteinMovieMaker:
             '-i', 'images.txt',
             '-vsync', 'vfr',
             '-pix_fmt', 'yuv420p',
-            os.path.abspath(os.path.join(list_file_path, self.output_movie_file))
+            os.path.abspath(os.path.join(self.input_directory, self.output_movie_file))
         ]
 
         try:
@@ -241,7 +244,7 @@ class ProteinMovieMaker:
 
     def export_traj(self):
         u = mda.Universe(self.pdb_files[0])  # use first pdb as topology
-        with mda.Writer(self.output_dcd_file, n_atoms=u.atoms.n_atoms) as dcd_writer:
+        with mda.Writer(os.path.join(self.input_directory, self.output_dcd_file), n_atoms=u.atoms.n_atoms) as dcd_writer:
             for pdb_file in self.pdb_files:
                 u = mda.Universe(pdb_file)
                 dcd_writer.write(u.atoms)
