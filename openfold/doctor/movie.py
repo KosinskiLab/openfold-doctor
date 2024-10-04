@@ -29,8 +29,10 @@ class ProteinMovieMaker:
         self.object_name = "protein_trajectory"
         self.png_dir = os.path.join(input_directory, "temp_png")
         self.pdb_dir = os.path.join(input_directory, "temp_pdb")
+        self.aligned_pdb_dir = os.path.join(self.pdb_dir, "aligned")
         self.low_res = low_res
         self.keep_data = keep_data
+        self.evoformer_blocks = 48
 
     def cif_to_pdb(self):
         os.makedirs(self.pdb_dir, exist_ok=True)
@@ -43,17 +45,6 @@ class ProteinMovieMaker:
             block = doc.sole_block()
             structure = gemmi.make_structure_from_block(block)
 
-            # multiply coordinates by 10 for "evoformer" files
-            # TODO this is almost random and should be fixed in openfold and/or dr output...
-            #if "evoformer" in cif_file:
-            #    for model in structure:
-            #        for chain in model:
-            #            for residue in chain:
-            #                for atom in residue:
-            #                    atom.pos.x *= 10 
-            #                    atom.pos.y *= 10
-            #                    atom.pos.z *= 10
-
             # structure.remove_hydrogens()  # TODO optional, remove hydrogen if not needed; should we?
             structure.write_pdb(pdb_file)
 
@@ -64,36 +55,15 @@ class ProteinMovieMaker:
         if not self.pdb_files:
             raise FileNotFoundError("No pdb files were created from cif files.")
 
-
-
-    def center_and_align_pdbs(self):
-        centered_pdb_dir = os.path.join(self.pdb_dir, "centered")
-        os.makedirs(centered_pdb_dir, exist_ok=True)
-
-        # Use the first structure as reference
-        ref_universe = mda.Universe(self.pdb_files[0])
-        ref_atoms = ref_universe.select_atoms('name CA')  # I am using alpha carbons for alignment...
-
-        aligned_pdb_files = []
-
-        for pdb_file in self.pdb_files:
-            mobile_universe = mda.Universe(pdb_file)
-            mobile_atoms = mobile_universe.select_atoms('name CA')
-
-            aligner = align.AlignTraj(
-                mobile_universe, ref_universe, select='name CA', in_memory=True
-            )
-            aligner.run()
-
-            # new pdb file, aligned
-            aligned_pdb_file = os.path.join(centered_pdb_dir, os.path.basename(pdb_file))
-            with mda.Writer(aligned_pdb_file, multiframe=False) as pdb_writer:
-                pdb_writer.write(mobile_universe.atoms)
-
-            aligned_pdb_files.append(aligned_pdb_file)
-
-        self.pdb_files = sorted(aligned_pdb_files)
-        logger.debug(f"Centered and aligned pdb files saved to {centered_pdb_dir}.")
+    def align_pdbs(self):
+        os.makedirs(self.aligned_pdb_dir, exist_ok=True)
+        reference_structure = mda.Universe(structure_file)
+        reference_structure.atoms.write(os.path.join(self.aligned_pdb_dir, os.path.basename(structure_file)))
+        for structure_file in self.pdb_files[1:]:
+            mobile_structure = mda.Universe(structure_file)
+            align.alignto(mobile_structure, reference_structure, select='name CA')
+            reference_structure.atoms.write(os.path.join(self.aligned_pdb_dir, os.path.basename(structure_file)))
+        logger.debug(f"Centered and aligned pdb files saved to {aligned_pdb_dir}.")
 
     def load_pdbs(self):
         cmd.reinitialize() 
@@ -113,7 +83,6 @@ class ProteinMovieMaker:
         total_frames = len(self.pdb_files)
 
         # vis. settings
-        
         cmd.hide("everything", self.object_name)
         cmd.dss(self.object_name)  # TODO assign secondary structures; slow, apparently does not work
         # set cartoon to handle loops as fallback if secondary structure fails
@@ -141,8 +110,6 @@ class ProteinMovieMaker:
             image_width = 1920
             image_height = 1080
 
-        x = 0
-
         for i in range(len(self.pdb_files)):
             state = i + 1
             cmd.frame(state)
@@ -161,18 +128,15 @@ class ProteinMovieMaker:
 
             # extract "frame" number immediately before _evoformer.pdb or .pdb
             # TODO clearly not the best solution...
-            match = re.search(r'_(\d+)(?:_evoformer)?\.pdb$', pdb_basename)
+            match = re.search(r'(\d+)(?:_evoformer)?\.pdb$', pdb_basename)
             try:
                 number = int(match.group(1))
             except Exception as e:
                 continue
 
-            if "evoformer" in pdb_basename:
-                y = number % 48  # 48 blocks in the evoformer stack; let's hope it does not change
-                text = f"Recycling iteration {x}, block {y}"
-            else: #TODO remove branch to have same output as alphafold
-                text = f"Recycling iteration {x}, end"
-                x += 1  # next recycle iter
+            x = number // self.evoformer_blocks
+            y = number % seolf.evoformer_blocks
+            text = f"Recycling iteration {x}, block {y}"
 
             self.label_image(frame_filename, text)
 
@@ -266,7 +230,7 @@ class ProteinMovieMaker:
         pymol.finish_launching(['pymol', '-cq'])
         
         self.cif_to_pdb()
-        self.center_and_align_pdbs()
+        self.align_pdbs()
         self.load_pdbs()
         self.export_movie()
         self.export_traj()
