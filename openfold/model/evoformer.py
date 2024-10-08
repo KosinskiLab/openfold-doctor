@@ -43,7 +43,6 @@ from openfold.model.triangular_multiplicative_update import (
 from openfold.utils.checkpointing import checkpoint_blocks, get_checkpoint_fn
 from openfold.utils.chunk_utils import chunk_layer, ChunkSizeTuner
 from openfold.utils.tensor_utils import add
-from openfold.doctor.doctor import dr
 
 import logging
 logging.basicConfig()
@@ -556,9 +555,6 @@ class EvoformerBlock(MSABlock):
             m, _ = input_tensors
         else:
             m = input_tensors[0]
-
-        if dr.in_use and self.linear:
-            dr.evoformer_output(m, z, self.linear)
 
         return m, z
 
