@@ -103,7 +103,7 @@ The movies generated for the MSA and pair representation will be saved under the
 ### 3. **A complete example using all features**
 
   ```bash
-   62 python run_pretrained_openfold.py \
+   python run_pretrained_openfold.py \
         $INPUT_FASTA_DIR \
         $TEMPLATE_MMCIF_DIR \
         --output_dir $OUTPUT_DIR \
