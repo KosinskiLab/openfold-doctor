@@ -61,8 +61,6 @@ from openfold.utils.tensor_utils import (
     tensor_tree_map,
 )
 
-from openfold.doctor.doctor import dr
-
 
 class AlphaFold(nn.Module):
     """
@@ -87,6 +85,7 @@ class AlphaFold(nn.Module):
         
         self.representation_hook = None
         self.iter_num = -1
+        self._cycle_no = -1
         
         # Main trunk + structure module
         if self.globals.is_multimer:
@@ -233,8 +232,6 @@ class AlphaFold(nn.Module):
         # Controls whether the model uses in-place operations throughout
         # The dual condition accounts for activation checkpoints
         inplace_safe = not (self.training or torch.is_grad_enabled())
-        if dr.in_use:
-            dr.inplace_safe = inplace_safe
 
         # Prep some features
         seq_mask = feats["seq_mask"]
@@ -567,12 +564,10 @@ class AlphaFold(nn.Module):
         early_stop = False
         num_recycles = 0
         for cycle_no in range(num_iters):
+            self._cycle_no = cycle_no
             # Select the features for the current recycling cycle
             fetch_cur_batch = lambda t: t[..., cycle_no]
             feats = tensor_tree_map(fetch_cur_batch, batch)
-
-            if dr.in_use:
-                dr.feats = feats
 
             # Enable grad iff we're training and it's the final recycling layer
             is_final_iter = cycle_no == (num_iters - 1) or early_stop
@@ -588,9 +583,6 @@ class AlphaFold(nn.Module):
                     prevs,
                     _recycle=(num_iters > 1)
                 )
-
-                if dr.in_use:
-                    dr.intermediate_output(outputs)
 
                 num_recycles += 1
 
