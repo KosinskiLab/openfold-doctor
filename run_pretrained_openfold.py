@@ -54,9 +54,7 @@ from openfold.utils.trace_utils import (
 from scripts.precompute_embeddings import EmbeddingGenerator
 from scripts.utils import add_data_args
 from openfold.doctor.utils import ranged_type
-from openfold.doctor.doctor import dr
 from openfold.doctor.movie import ProteinMovieMaker
-from openfold.model.structure_module import StructureModule
 from openfold.doctor.representation_exporter import RepresentationExporter
 from openfold.doctor.structure_exporter import PDBExporter
 
@@ -324,9 +322,9 @@ def main(args):
                 for k, v in processed_feature_dict.items()
             }
 
-            if args.protein_movie and not args.use_doctor:
-                args.use_doctor = True
-                logging.warning("Bad arguments combination. --use_doctor must be set if --protein_movie is set. --use_doctor automatically set to True.")
+            if args.protein_movie and not args.intermediate_structures_export:
+                args.intermediate_structures_export = True
+                logging.warning("Bad arguments combination. --intermediate_structures_export must be set if --protein_movie is set. --intermediate_structures_export automatically set to True.")
 
             if args.low_res_movie and not args.protein_movie:
                 logging.warning("Bad arguments combination. --low_res_movie ignored. It should be used in combination with --protein_movie.")
@@ -340,20 +338,6 @@ def main(args):
             if args.representation_movies and not args.representation_export:
                 args.representation_export = True
                 logging.warning("Bad arguments combination. --representation_export must be set if --representation_movies is set. --representation_export automatically set to True.")
-
-            if args.use_doctor:
-                dr.in_use = True
-                dr.output_name = output_name
-                dr.output_dir = output_directory
-                dr.feature_dict = feature_dict
-                dr.processed_feature_dict = processed_feature_dict
-                dr.config_preset = args.config_preset
-                dr.multimer_ri_gap = args.multimer_ri_gap
-                dr.subtract_plddt = args.subtract_plddt
-                dr.feature_processor = feature_processor
-                dr.cif_output = args.cif_output
-                dr.structure_module = StructureModule(is_multimer=is_multimer, **config["model"]["structure_module"])
-                dr.globals = config.globals
 
 
             if args.trace_model:
@@ -370,7 +354,7 @@ def main(args):
                     cur_tracing_interval = rounded_seqlen
 
             if args.intermediate_structures_export:
-                str_exporter = PDBExporter(model, output_dir=os.path.join(output_directory, "pdb_structures"))
+                str_exporter = PDBExporter(model, feature_dict, feature_processor, args, output_dir=os.path.join(output_directory, "intermediate_structures"))
             
             #TODO separate msa and pair export args?
             if args.representation_export:
@@ -426,15 +410,8 @@ def main(args):
                 logger.info(f"Model output written to {output_dict_path}...")
 
             if args.protein_movie:
+                str_exporter.make_movie()
                 
-                mmaker = ProteinMovieMaker(
-                    input_directory=dr.output_dir,
-                    frame_duration_seconds=args.frame_duration_seconds,
-                    low_res=args.low_res_movie,
-                    keep_data=args.keep_movie_data
-                )   
-                mmaker.run()
-
             if args.representation_movies:
                 repr_exporter.pngs_to_mpg()
 
@@ -447,11 +424,6 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "template_mmcif_dir", type=str,
-    )
-    parser.add_argument(
-        "--use_doctor",
-        action="store_true", default=False,
-        help=""""""
     )
     parser.add_argument(
         "--intermediate_structures_export",
