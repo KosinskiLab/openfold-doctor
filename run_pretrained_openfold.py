@@ -359,7 +359,8 @@ def main(args):
             #TODO separate msa and pair export args?
             if args.representation_export:
                 repr_exporter = RepresentationExporter(model, output_dir=os.path.join(output_directory, "heatmaps"))
-
+            
+            logger.debug(f"max recycling iters: {args.max_recycling_iters}")
             out = run_model(model, processed_feature_dict, tag, args.output_dir)
 
             # Toss out the recycling dimensions --- we don't need them anymore
@@ -424,6 +425,10 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "template_mmcif_dir", type=str,
+    )
+    parser.add_argument(
+        "--max_recycling_iters", type=ranged_type(int, 0, 3), default=3,
+        help="""Number of recycling iterations"""
     )
     parser.add_argument(
         "--intermediate_structures_export",
