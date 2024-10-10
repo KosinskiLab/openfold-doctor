@@ -57,6 +57,7 @@ from openfold.doctor.utils import ranged_type
 from openfold.doctor.movie import ProteinMovieMaker
 from openfold.doctor.representation_exporter import RepresentationExporter
 from openfold.doctor.structure_exporter import PDBExporter
+from openfold.doctor.sequence_coverage_plotter import SequenceCoveragePlotter
 
 TRACING_INTERVAL = 50
 
@@ -284,6 +285,8 @@ def main(args):
         args.jax_param_path,
         args.output_dir)
 
+    seq_coverage_plotter = None
+
     for model, output_directory in model_generator:
         cur_tracing_interval = 0
         for (tag, tags), seqs in sorted_targets:
@@ -312,6 +315,10 @@ def main(args):
                     )
 
                 feature_dicts[tag] = feature_dict
+
+            if seq_coverage_plotter:
+                logger.debug(f"feature dict {tag}: {feature_dict}")
+                seq_coverage_plotter._plot_msa_v2(tag, feature_dict)
 
             processed_feature_dict = feature_processor.process_features(
                 feature_dict, mode='predict', is_multimer=is_multimer
@@ -353,6 +360,9 @@ def main(args):
                     )
                     cur_tracing_interval = rounded_seqlen
 
+            if args.plot_msa_coverage:
+                seq_coverage_plotter = SequenceCoveragePlotter(alignment_dir)
+            
             if args.intermediate_structures_export:
                 str_exporter = PDBExporter(model, feature_dict, feature_processor, args, output_dir=os.path.join(output_directory, "intermediate_structures"))
             
@@ -429,6 +439,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--max_recycling_iters", type=ranged_type(int, 0, 3), default=3,
         help="""Number of recycling iterations"""
+    )
+    parser.add_argument(
+        "--plot_msa_coverage",
+        action="store_true", default=False,
+        help=""""""
     )
     parser.add_argument(
         "--intermediate_structures_export",
