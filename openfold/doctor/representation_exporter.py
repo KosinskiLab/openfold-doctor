@@ -54,7 +54,7 @@ class RepresentationExporter:
         plt.figure(figsize=(12, 8))
         sns.heatmap(reduced_representation, cmap='viridis', cbar=True)
         plt.title(title)
-        plt.xlabel("seq lenght")
+        plt.xlabel("seq length")
         plt.ylabel("N alignments") if which == "msa" else plt.ylabel("seq length")
 
         filepath = os.path.join(os.path.join(self.output_dir, which), f"{filename}.png")
