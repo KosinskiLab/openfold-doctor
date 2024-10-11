@@ -252,6 +252,10 @@ def main(args):
     else:
         alignment_dir = args.use_precomputed_alignments
 
+    seq_coverage_plotter = None
+    if args.plot_msa_coverage:
+        seq_coverage_plotter = SequenceCoveragePlotter(alignment_dir)
+
     tag_list = []
     seq_list = []
     for fasta_file in list_files_with_extensions(args.fasta_dir, (".fasta", ".fa")):
@@ -284,8 +288,6 @@ def main(args):
         args.openfold_checkpoint_path,
         args.jax_param_path,
         args.output_dir)
-
-    seq_coverage_plotter = None
 
     for model, output_directory in model_generator:
         cur_tracing_interval = 0
@@ -360,8 +362,6 @@ def main(args):
                     )
                     cur_tracing_interval = rounded_seqlen
 
-            if args.plot_msa_coverage:
-                seq_coverage_plotter = SequenceCoveragePlotter(alignment_dir)
             
             if args.intermediate_structures_export:
                 str_exporter = PDBExporter(model, feature_dict, feature_processor, args, output_dir=os.path.join(output_directory, "intermediate_structures"))
