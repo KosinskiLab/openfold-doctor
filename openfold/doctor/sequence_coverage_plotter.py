@@ -40,7 +40,7 @@ class SequenceCoveragePlotter:
         logger.info(f"Sequence coverage plot saved as {os.path.join(self.out_dir, out_file_name)}")
     
     # taken from https://github.com/sokrypton/ColabFold/blob/main/colabfold/plot.py
-    def _plot_msa_v2(self, tag, feature_dict, sort_lines=True, dpi=100):
+    def _plot_msa_v2(self, tag, feature_dict, sort_lines=True, dpi=300):
         seq = feature_dict["msa"][0]
         if "asym_id" in feature_dict:
           Ls = [0]
