@@ -21,8 +21,12 @@ import pickle
 import random
 import time
 import json
+import warnings
 
+from Bio import BiopythonDeprecationWarning # what can possibly go wrong...
+warnings.simplefilter(action='ignore', category=BiopythonDeprecationWarning)
 logging.basicConfig()
+
 logger = logging.getLogger(__file__)
 logger.setLevel(level=logging.DEBUG)
 
@@ -319,7 +323,6 @@ def main(args):
                 feature_dicts[tag] = feature_dict
 
             if seq_coverage_plotter:
-                logger.debug(f"feature dict {tag}: {feature_dict}")
                 seq_coverage_plotter._plot_msa_v2(tag, feature_dict)
 
             processed_feature_dict = feature_processor.process_features(
