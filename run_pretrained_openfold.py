@@ -21,8 +21,12 @@ import pickle
 import random
 import time
 import json
+import warnings
 
+from Bio import BiopythonDeprecationWarning # what can possibly go wrong...
+warnings.simplefilter(action='ignore', category=BiopythonDeprecationWarning)
 logging.basicConfig()
+
 logger = logging.getLogger(__file__)
 logger.setLevel(level=logging.DEBUG)
 
@@ -57,6 +61,7 @@ from openfold.doctor.utils import ranged_type
 from openfold.doctor.movie import ProteinMovieMaker
 from openfold.doctor.representation_exporter import RepresentationExporter
 from openfold.doctor.structure_exporter import PDBExporter
+from openfold.doctor.sequence_coverage_plotter import SequenceCoveragePlotter
 
 TRACING_INTERVAL = 50
 
@@ -251,6 +256,10 @@ def main(args):
     else:
         alignment_dir = args.use_precomputed_alignments
 
+    seq_coverage_plotter = None
+    if args.plot_msa_coverage:
+        seq_coverage_plotter = SequenceCoveragePlotter(alignment_dir)
+
     tag_list = []
     seq_list = []
     for fasta_file in list_files_with_extensions(args.fasta_dir, (".fasta", ".fa")):
@@ -313,6 +322,9 @@ def main(args):
 
                 feature_dicts[tag] = feature_dict
 
+            if seq_coverage_plotter:
+                seq_coverage_plotter._plot_msa_v2(tag, feature_dict)
+
             processed_feature_dict = feature_processor.process_features(
                 feature_dict, mode='predict', is_multimer=is_multimer
             )
@@ -353,13 +365,15 @@ def main(args):
                     )
                     cur_tracing_interval = rounded_seqlen
 
+            
             if args.intermediate_structures_export:
                 str_exporter = PDBExporter(model, feature_dict, feature_processor, args, output_dir=os.path.join(output_directory, "intermediate_structures"))
             
             #TODO separate msa and pair export args?
             if args.representation_export:
                 repr_exporter = RepresentationExporter(model, output_dir=os.path.join(output_directory, "heatmaps"))
-
+            
+            logger.debug(f"max recycling iters: {args.max_recycling_iters}")
             out = run_model(model, processed_feature_dict, tag, args.output_dir)
 
             # Toss out the recycling dimensions --- we don't need them anymore
@@ -424,6 +438,15 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "template_mmcif_dir", type=str,
+    )
+    parser.add_argument(
+        "--max_recycling_iters", type=ranged_type(int, 0, 3), default=3,
+        help="""Number of recycling iterations"""
+    )
+    parser.add_argument(
+        "--plot_msa_coverage",
+        action="store_true", default=False,
+        help=""""""
     )
     parser.add_argument(
         "--intermediate_structures_export",
