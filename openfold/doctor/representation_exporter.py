@@ -66,7 +66,7 @@ class RepresentationExporter:
         reduced_representation = np.max(data, axis=-1)
         self._save_heatmap(reduced_representation, title, which)         
    
-   def _save_heatmap(self, reduced_representation, title, which):
+    def _save_heatmap(self, reduced_representation, title, which):
         plt.figure(figsize=(12, 8))
         sns.heatmap(reduced_representation, cmap='viridis', cbar=True)
         plt.title(title)
