@@ -279,9 +279,9 @@ def _attention(query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, bias
     a = softmax_no_cast(a, -1)
 
     # [*, H, Q, C_hidden]
-    a = torch.matmul(a, value)
+    o = torch.matmul(a, value)
 
-    return a
+    return o
 
 
 @torch.jit.ignore
