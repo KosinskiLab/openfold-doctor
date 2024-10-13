@@ -266,7 +266,7 @@ def softmax_no_cast(t: torch.Tensor, dim: int = -1) -> torch.Tensor:
 
 
 #@torch.jit.script
-def _attention(query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, biases: List[torch.Tensor]) -> torch.Tensor:
+def _attention(query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, biases: List[torch.Tensor], save_attn_callback: Optional[Callable[[torch.Tensor], None]] = None) -> torch.Tensor:
     # [*, H, C_hidden, K]
     key = permute_final_dims(key, (1, 0))
 
@@ -277,6 +277,8 @@ def _attention(query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, bias
         a += b
 
     a = softmax_no_cast(a, -1)
+    if save_attn_callback:
+        save_attn_callback(a)
 
     # [*, H, Q, C_hidden]
     o = torch.matmul(a, value)
@@ -376,6 +378,7 @@ class Attention(nn.Module):
         self.c_hidden = c_hidden
         self.no_heads = no_heads
         self.gating = gating
+        self.save_attn_callback = None
 
         # DISCREPANCY: c_hidden is not the per-head channel dimension, as
         # stated in the supplement, but the overall channel dimension.
@@ -541,7 +544,7 @@ class Attention(nn.Module):
         elif use_flash:
             o = _flash_attn(q, k, v, flash_mask)
         else:
-            o = _attention(q, k, v, biases)
+            o = _attention(q, k, v, biases, self.save_attn_callback)
             o = o.transpose(-2, -3)
 
         o = self._wrap_up(o, q_x)
