@@ -62,6 +62,7 @@ from openfold.doctor.movie import ProteinMovieMaker
 from openfold.doctor.representation_exporter import RepresentationExporter
 from openfold.doctor.structure_exporter import PDBExporter
 from openfold.doctor.sequence_coverage_plotter import SequenceCoveragePlotter
+from openfold.doctor.attention_exporter import AttnExporter
 
 TRACING_INTERVAL = 50
 
@@ -259,7 +260,7 @@ def main(args):
     seq_coverage_plotter = None
     if args.plot_msa_coverage:
         seq_coverage_plotter = SequenceCoveragePlotter(alignment_dir)
-
+    
     tag_list = []
     seq_list = []
     for fasta_file in list_files_with_extensions(args.fasta_dir, (".fasta", ".fa")):
@@ -372,7 +373,10 @@ def main(args):
             #TODO separate msa and pair export args?
             if args.representation_export:
                 repr_exporter = RepresentationExporter(model, output_dir=os.path.join(output_directory, "heatmaps"))
-            
+
+            if args.attention_export:
+                attn_exporter = AttnExporter(model, args, os.path.join(output_directory, "attn"))
+
             logger.debug(f"max recycling iters: {args.max_recycling_iters}")
             out = run_model(model, processed_feature_dict, tag, args.output_dir)
 
@@ -442,6 +446,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--max_recycling_iters", type=ranged_type(int, 0, 3), default=3,
         help="""Number of recycling iterations"""
+    )
+    parser.add_argument(
+        "--attention_export",
+        action="store_true", default=False,
+        help=""""""
     )
     parser.add_argument(
         "--plot_msa_coverage",
