@@ -52,21 +52,21 @@ class RepresentationExporter:
         filename = f"{which}_avg_{frame_number:02d}"
         title = f"{which} representation {stage} recycling {iteration}"
         reduced_representation = data.mean(axis=-1)
-        self._save_heatmap(reduced_representation, title, which)         
+        self._save_heatmap(reduced_representation, title, which, filename)         
 
         # export data, *median* along z axis
         filename = f"{which}_median_{frame_number:02d}"
         title = f"{which} representation {stage} recycling {iteration}"
         reduced_representation = np.median(data, axis=-1)
-        self._save_heatmap(reduced_representation, title, which)         
+        self._save_heatmap(reduced_representation, title, which, filename)         
 
         # export data, *max* along z axis
         filename = f"{which}_max_{frame_number:02d}"
         title = f"{which} representation {stage} recycling {iteration}"
         reduced_representation = np.max(data, axis=-1)
-        self._save_heatmap(reduced_representation, title, which)         
+        self._save_heatmap(reduced_representation, title, which, filename)         
    
-    def _save_heatmap(self, reduced_representation, title, which):
+    def _save_heatmap(self, reduced_representation, title, which, filename):
         plt.figure(figsize=(12, 8))
         sns.heatmap(reduced_representation, cmap='viridis', cbar=True)
         plt.title(title)
