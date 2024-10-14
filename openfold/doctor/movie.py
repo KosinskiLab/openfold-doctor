@@ -57,13 +57,14 @@ class ProteinMovieMaker:
 
     def align_pdbs(self):
         os.makedirs(self.aligned_pdb_dir, exist_ok=True)
+        structure_file = self.pdb_files[0]
         reference_structure = mda.Universe(structure_file)
         reference_structure.atoms.write(os.path.join(self.aligned_pdb_dir, os.path.basename(structure_file)))
         for structure_file in self.pdb_files[1:]:
             mobile_structure = mda.Universe(structure_file)
             align.alignto(mobile_structure, reference_structure, select='name CA')
             reference_structure.atoms.write(os.path.join(self.aligned_pdb_dir, os.path.basename(structure_file)))
-        logger.debug(f"Centered and aligned pdb files saved to {aligned_pdb_dir}.")
+        logger.debug(f"Centered and aligned pdb files saved to {self.aligned_pdb_dir}.")
 
     def load_pdbs(self):
         cmd.reinitialize() 
@@ -135,7 +136,7 @@ class ProteinMovieMaker:
                 continue
 
             x = number // self.evoformer_blocks
-            y = number % seolf.evoformer_blocks
+            y = number % self.evoformer_blocks
             text = f"Recycling iteration {x}, block {y}"
 
             self.label_image(frame_filename, text)
