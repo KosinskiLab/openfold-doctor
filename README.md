@@ -97,7 +97,7 @@ The movies generated for the MSA and pair representation will be saved under the
   python run_openfold.py [your usual openfold flags] --plot_msa_coverage
   ```
 
-| [<img src="https://github.com/user-attachments/assets/373d8961-5015-414a-aa71-8a883fa783c1" width="400" />](https://github.com/user-attachments/assets/373d8961-5015-414a-aa71-8a883fa783c1) [<img src="https://github.com/user-attachments/assets/cca0af4b-e8c7-4751-8404-f93d412f1b3c" width="400" />](https://github.com/user-attachments/assets/cca0af4b-e8c7-4751-8404-f93d412f1b3c) |
+| [<img src="https://github.com/user-attachments/assets/373d8961-5015-414a-aa71-8a883fa783c1" width="300" />](https://github.com/user-attachments/assets/373d8961-5015-414a-aa71-8a883fa783c1) [<img src="https://github.com/user-attachments/assets/cca0af4b-e8c7-4751-8404-f93d412f1b3c" width="300" />](https://github.com/user-attachments/assets/cca0af4b-e8c7-4751-8404-f93d412f1b3c) |
 |:--:| 
 | CASP14 target T1082 (left) and 1D3Z (Ubiquitin; right) MSA coverage plots |
 
