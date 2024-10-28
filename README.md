@@ -1,6 +1,6 @@
 # OpenfoldDoctor
 
-**OpenfoldDoctor** is an extension of the [OpenFold](https://github.com/aqlaboratory/openfold) project, designed to enhance protein folding simulations with advanced inspection capabilities. With OpenfoldDoctor, users can gain deeper insights into the folding process through various export functionalities.
+**OpenfoldDoctor** is an extension of the [OpenFold](https://github.com/aqlaboratory/openfold) project, designed to enhance protein folding simulations with advanced inspection capabilities. With OpenFold Doctor, users can gain deeper insights into the folding process through various export functionalities.
 
 ## 🚀 Features
 
@@ -9,6 +9,7 @@
 - **MSA and pair representations**:
   - **MSA**: Visualize Multiple Sequence Alignment (MSA) data through heatmaps.
   - **Pair representation**: Export heatmaps of pairwise interactions at each iteration of the simulation.
+- **Attention mechanism visualization**: Export heatmaps showing row-wise and column-wise attention.
 
 ## 📦 Installation
 
@@ -19,7 +20,7 @@ To get started with OpenFold Doctor, follow these steps:
 Begin by cloning the OpenFold repository from GitHub:
 
 ```bash
-git clone https://github.com/aqlaboratory/openfold.git
+git clone https://github.com/KosinskiLab/openfold-doctor.git
 ```
 
 ### 2. Checkout the `dr-dev branch`
@@ -159,7 +160,7 @@ The movies generated for the MSA and pair representation will be saved under the
 
 ## 🔗 Additional Resources
 - **OpenFold repository**: https://github.com/aqlaboratory/openfold
-- **OpenFold Doctor releases**: https://github.com/lgiannantoni/openfold/releases
+- **OpenFold Doctor releases**: https://github.com/KosinskiLab/openfold/releases
 - **Issues and support**: If you encounter any issues, feel free to open an issue on the [OpenfoldDoctor GitHub repository](https://github.com/lgiannantoni/openfold/issues).
 
 ## 📝 Contributing
