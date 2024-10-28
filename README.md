@@ -22,20 +22,19 @@ Begin by cloning the OpenFold repository from GitHub:
 git clone https://github.com/aqlaboratory/openfold.git
 ```
 
-### 2. Checkout the `pl_upgrades branch`
+### 2. Checkout the `dr-dev branch`
 
-Move into the cloned OpenFold directory, switch to the `pl_upgrades` branch and reset it to the specific commit `3bec3e9b2d1e8bdb83887899102eff7d42dc2ba9`:
+Move into the cloned OpenFold Doctor directory, and switch to the `dr-dev` branch:
 
 ```bash
 cd openfold
-git checkout pl_upgrades
-git reset --hard 3bec3e9b2d1e8bdb83887899102eff7d42dc2ba9
+git checkout dr-dev
 ```
 
-### 4. Proceed with OpenFold installation
-Continue with the [original OpenFold installation process](https://github.com/aqlaboratory/openfold/blob/pl_upgrades/README.md).
+### 3. Proceed with OpenFold installation
+Continue with the [original OpenFold installation process (`pl_upgrades` branch)](https://github.com/aqlaboratory/openfold/blob/pl_upgrades/README.md), however installing the conda environment as in the OpenFold Doctor `environment.yml` file.
 
-Ensure you follow all the steps outlined in the OpenFold installation guide to set up the environment correctly with the new dependencies introduced by OpenFold Doctor.
+Ensure you follow all the steps outlined in the OpenFold installation guide to set up the environment correctly (e.g. using CUDA 12, as per the `pl_upgrades` branch requirements) with the new dependencies introduced by OpenFold Doctor.
 
 ## 📈 Usage
 
