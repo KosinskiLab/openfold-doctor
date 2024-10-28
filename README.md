@@ -12,47 +12,29 @@
 
 ## 📦 Installation
 
-To get started with OpenfoldDoctor, follow these steps:
+To get started with OpenFold Doctor, follow these steps:
 
-### 1. **Clone the original OpenFold repository**
+### 1. **Clone this OpenFold repository**
 
-Begin by cloning the original OpenFold repository from GitHub:
+Begin by cloning the OpenFold repository from GitHub:
 
 ```bash
 git clone https://github.com/aqlaboratory/openfold.git
 ```
 
-### 2. Navigate to the OpenFold Directory
-Move into the cloned OpenFold directory:
+### 2. Checkout the `dr-dev branch`
+
+Move into the cloned OpenFold Doctor directory, and switch to the `dr-dev` branch:
 
 ```bash
 cd openfold
+git checkout dr-dev
 ```
 
-### 3. Download the OpenfoldDoctor patch
-Download the `openfold_doctor.patch` file from the OpenfoldDoctor releases. Ensure you save the patch file to a known location on your local machine.
+### 3. Proceed with OpenFold installation
+Continue with the [original OpenFold installation process (`pl_upgrades` branch)](https://github.com/aqlaboratory/openfold/blob/pl_upgrades/README.md), however installing the conda environment as in the OpenFold Doctor `environment.yml` file.
 
-### 4. Checkout the `pl_upgrades branch`
-Switch to the `pl_upgrades` branch and reset it to the specific commit `3bec3e9b2d1e8bdb83887899102eff7d42dc2ba9`:
-
-```bash
-git checkout pl_upgrades
-git reset --hard 3bec3e9b2d1e8bdb83887899102eff7d42dc2ba9
-```
-
-### 5. Apply the OpenfoldDoctor patch
-Apply the downloaded patch using to incorporate OpenfoldDoctor's enhancements:
-
-```bash
-git am --3way /path/to/openfold_doctor.patch
-```
-
-**Note**: Replace `/path/to/` with the actual path to your downloaded `openfold_doctor.patch` file.
-
-### 6. Proceed with OpenFold installation
-Continue with the [original OpenFold installation process](https://github.com/aqlaboratory/openfold/blob/pl_upgrades/README.md).
-
-Ensure you follow all the steps outlined in the OpenFold installation guide to set up the environment correctly with the new dependencies introduced by OpenfoldDoctor.
+Ensure you follow all the steps outlined in the OpenFold installation guide to set up the environment correctly (e.g. using CUDA 12, as per the `pl_upgrades` branch requirements) with the new dependencies introduced by OpenFold Doctor.
 
 ## 📈 Usage
 
@@ -64,10 +46,10 @@ This section covers how to utilize all the extensions added to the `pl_upgrades`
 
 **How to**:
 
-When executing the folding simulation, use the `--use_doctor` flag to enable the export of intermediate structures.
+When executing the folding simulation, use the `--intermediate_structures_export` flag to enable the export of intermediate structures in `.cif` format.
 
   ```bash
-  python run_openfold.py [your usual openfold flags] --use_doctor
+  python run_openfold.py [your usual openfold flags] --intermediate_structures_export
   ```
 
 To generate a **movie of the protein structure evolution** during the inference, you can use the following additional flags:
@@ -81,7 +63,7 @@ Example:
   python run_openfold.py [your usual openfold flags] --protein_movie --frame_durations_seconds 1.5 --low_res_movie --keep_movie_data
   ```
 
-The `--protein_movie` flag automatically enables also the `--use_doctor flag`.
+`--intermediate_structures_export` can be omitted when using `--protein_movie`. 
 
 ### 2. **Exporting MSA and pair representations**
 
@@ -100,7 +82,52 @@ To generate a **movie of the MSA and pair representation evolution** during the 
 
 The movies generated for the MSA and pair representation will be saved under the `msa` and `pair` folders, respectively, together with the heatmap png images.
 
-### 3. **A complete example using all features**
+| [<img src="https://github.com/user-attachments/assets/a3f8de36-963d-4434-9a6c-a32935dbfaa4" />](https://github.com/user-attachments/assets/a3f8de36-963d-4434-9a6c-a32935dbfaa4) |
+|:--:| 
+| 1D3Z (Ubiquitin) MSA (top) and pair (bottom) representation heatmaps before and after the first two recycles. |
+
+
+### 3. **MSA coverage**
+
+**Description**: Export a png chart of the MSA coverage.
+
+**How to**: Use the `--plot_msa_coverage` flag to save the MSA coverage plot in the `alignment` folder under the main output folder.
+
+  ```bash
+  python run_openfold.py [your usual openfold flags] --plot_msa_coverage
+  ```
+
+| [<img src="https://github.com/user-attachments/assets/373d8961-5015-414a-aa71-8a883fa783c1" width="400" />](https://github.com/user-attachments/assets/373d8961-5015-414a-aa71-8a883fa783c1) [<img src="https://github.com/user-attachments/assets/cca0af4b-e8c7-4751-8404-f93d412f1b3c" width="400" />](https://github.com/user-attachments/assets/cca0af4b-e8c7-4751-8404-f93d412f1b3c) |
+|:--:| 
+| CASP14 target T1082 (left) and 1D3Z (Ubiquitin; right) MSA coverage plots |
+
+
+### 4. **Visualization of attention**
+
+**Description**: Export heatmaps of the row-wise and column-wise attention mechanisms.
+
+**How to**: Use the `--attention_export` flag to save the plots in the `attn` folder under the main output folder.
+
+  ```bash
+  python run_openfold.py [your usual openfold flags] --attention_export
+  ```
+
+| [<img src="https://github.com/user-attachments/assets/d490e8d8-6c05-4f64-a1c0-bbf5eb6fc0e2" />](https://github.com/user-attachments/assets/d490e8d8-6c05-4f64-a1c0-bbf5eb6fc0e2) |
+|:--:| 
+| CASP14 target T1082 MSA column-wise attention heatmaps |
+
+### 5. **MSA fasta**
+
+**Description**: Export MSA fasta before and after filtering and embedding.
+
+**How to**: Use the `--msa_fasta_export` flag to save the fasta files in the `alignment` folder under the main output folder.
+
+  ```bash
+  python run_openfold.py [your usual openfold flags] --msa_fasta_export
+  ```
+
+
+### 6. **A complete example using all features**
 
   ```bash
    python run_pretrained_openfold.py \
@@ -124,12 +151,15 @@ The movies generated for the MSA and pair representation will be saved under the
         --frame_duration_seconds 0.5 \
         --low_res_movie \
         --keep_movie_data \
-        --representation_movie
+        --representation_movie \
+        --attention_export \
+        --plot_msa_coverage \
+        --msa_fasta_export
   ```
 
 ## 🔗 Additional Resources
 - **OpenFold repository**: https://github.com/aqlaboratory/openfold
-- **OpenfoldDoctor releases**: https://github.com/lgiannantoni/openfold/releases
+- **OpenFold Doctor releases**: https://github.com/lgiannantoni/openfold/releases
 - **Issues and support**: If you encounter any issues, feel free to open an issue on the [OpenfoldDoctor GitHub repository](https://github.com/lgiannantoni/openfold/issues).
 
 ## 📝 Contributing
